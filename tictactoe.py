@@ -1,6 +1,9 @@
 import sys
 import os
 import random
+import copy
+
+import computer_moves
 
 
 playerTypes = ['x', 'o']
@@ -53,14 +56,13 @@ def handleMove(coordinates, game, playerType, message_queue):
         message_queue.append('You cannot make that move')
         return game
 
+
 def computerMove(game):
     return game.makeMove(3, 3, game.computerPlayer)
 
 
 class GameState:
-    """
-    A class to represent the state of our game and handle changes.
-    """
+    """A class to represent the state of our game and handle changes."""
 
     def __init__(self, nextMove='x'):
         self.human = random.choice(playerTypes)
@@ -73,7 +75,8 @@ class GameState:
         ]
 
     def state(self):
-        return self.rows
+        gameState = copy.deepcopy(self.rows)
+        return gameState
 
     def toggleNextMove(self):
         self.nextMove = 'x' if self.nextMove != 'x' else 'o'
@@ -102,7 +105,8 @@ if __name__ == '__main__':
         drawScreen(message_queue, game)
         message_queue = []
         if game.human == game.nextMove:
-            uinput = input('Make your move: ')
+            uinput = input('You are player %s\n' % game.human +
+                            'Make your move: ')
             if 'q' in uinput.lower():
                 print('Thanks for playing!')
                 sys.exit()
@@ -113,4 +117,8 @@ if __name__ == '__main__':
                 continue
             handleMove(moveCoordinates, game, game.human, message_queue)
         else:
-            computerMove(game)
+            moveCoords = computer_moves.minmax(game.state(), game.nextMove)
+            moveCoords = {'row': moveCoords[0] + 1, 'column': moveCoords[1] + 1}
+            message_queue.append('Computer moved to %s' % moveCoords)
+            handleMove(moveCoords, game, game.nextMove, message_queue)
+            continue
