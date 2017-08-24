@@ -127,12 +127,7 @@ def minmax(gameState, playerType):
         )
         scoresWithDepth = [mmHelper(m) for m in availableMoves]
         scoresWODepth = [x['endResult'] for x in scoresWithDepth]
-        maxScore = compareFn(scoresWODepth)
-        highestResults = [
-            x for x in scoresWithDepth
-            if x['endResult'] == maxScore
-        ]
-        return highestResults[0]
+        return {'depth': depth, 'endResult': sum(scoresWODepth)}
 
     # Recurse
     possibleNextMoves = allOpenSlots(gameState)
@@ -142,8 +137,7 @@ def minmax(gameState, playerType):
     maxMoveValue = max([v['endResult'] for v in moves.values()])
     minDepth = min([v['depth'] for v in moves.values()])
     bestMoves = [
-        k for k, v in moves.items()
-        if v['depth'] == minDepth  # and v['endResult'] == maxMoveValue
+        k for k, v in moves.items() if v['endResult'] == maxMoveValue
     ]
     import pdb; pdb.set_trace()
     return bestMoves[0]
