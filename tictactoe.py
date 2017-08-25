@@ -1,6 +1,7 @@
 import sys
 import os
 import random
+import time
 import copy
 
 import computer_moves
@@ -10,6 +11,7 @@ playerTypes = ['x', 'o']
 wrongInputMessage = ('I do not understand. ' +
                      'To make a move, type the number of the row, then the ' +
                      'column. For example, "1 2". Type "q" to quit.')
+isTied = lambda g: len(computer_moves.allOpenSlots(g)) < 1
 
 
 def welcome_message(playerType):
@@ -65,8 +67,12 @@ class GameState:
     """A class to represent the state of our game and handle changes."""
 
     def __init__(self, nextMove='x'):
+        """
         self.human = random.choice(playerTypes)
         self.computerPlayer = 'x' if self.human != 'x' else 'o'
+        """
+        self.human = 'x'
+        self.computerPlayer = 'o'
         self.nextMove = nextMove
         self.rows = [
             [None, None, None],
@@ -102,6 +108,11 @@ if __name__ == '__main__':
     game = GameState()
     message_queue = [welcome_message(game.human)]
     while True:
+        if computer_moves.isWon(game.state()) or isTied(game.state()):
+            message_queue = ['Game over!']
+            drawScreen(message_queue, game)
+            time.sleep(5)
+            break
         drawScreen(message_queue, game)
         message_queue = []
         if game.human == game.nextMove:

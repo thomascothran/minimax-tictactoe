@@ -58,13 +58,10 @@ def isWon(gameState):
 
 
 def evalGameResult(winnerType, playerType):
-    otherPlayerType = 'x' if playerType == 'o' else 'x'
     if winnerType == playerType:
         return 100
-    elif winnerType == otherPlayerType:
-        return -100
     else:
-        return 0
+        return -100
 
 
 def allOpenSlots(gameState):
@@ -106,6 +103,7 @@ def makeMove(gameState, move, playerType):
 
 def minmax(gameState, playerType):
     """Gets the best move for a player in the form (row, col)."""
+    bestMove = None
     def minmaxIter(gameState, playerTurn, depth=0):
         # Base conditions: Either there's a winner, or there's no next available
         # move
@@ -115,29 +113,31 @@ def minmax(gameState, playerType):
         if winner:
             # Game over, evaluate game result
             endResult = evalGameResult(winner, playerType)
-            return {'endResult': endResult, 'depth': depth}
+            return endResult
         # Check for tie
         availableMoves = allOpenSlots(gameState)
         if len(availableMoves) < 1:
-            return {'endResult': 0, 'depth': depth}
+            return 0
 
-        moveHelper = lambda m: makeMove(gameState, m, playerTurn)
-        mmHelper = lambda mv: minmaxIter(
-            moveHelper(mv), flipPlayer(playerTurn), depth + 1
-        )
-        scoresWithDepth = [mmHelper(m) for m in availableMoves]
-        scoresWODepth = [x['endResult'] for x in scoresWithDepth]
-        return {'depth': depth, 'endResult': sum(scoresWODepth)}
+        # Nothing? Recurse
+        scores = []
+        moves = []
+        mvHelper = lambda m: makeMove(gameState, m, playerTurn)
+        for mv in availableMoves:
+            moves.append(mv)
+            scores.append(minmaxIter(
+                mvHelper(mv),
+                flipPlayer(playerTurn),
+                depth + 1
+            ))
+        highestOrLowest = compareFn(scores)
+        if depth == 0:
+            moveIndex = scores.index(highestOrLowest)
+            # Set bestMove
+            nonlocal bestMove
+            bestMove = moves[moveIndex]
+        return highestOrLowest
 
     # Recurse
-    possibleNextMoves = allOpenSlots(gameState)
-    makeMoveHelper = lambda x: makeMove(gameState, x, playerType)
-    seedBoard = {m: makeMoveHelper(m) for m in possibleNextMoves}
-    moves = {k: minmaxIter(v, playerType) for k, v in seedBoard.items()}
-    maxMoveValue = max([v['endResult'] for v in moves.values()])
-    minDepth = min([v['depth'] for v in moves.values()])
-    bestMoves = [
-        k for k, v in moves.items() if v['endResult'] == maxMoveValue
-    ]
-    import pdb; pdb.set_trace()
-    return bestMoves[0]
+    result = minmaxIter(gameState, playerType)
+    return bestMove
