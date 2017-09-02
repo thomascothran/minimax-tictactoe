@@ -142,8 +142,10 @@ def runGame(game, message_queue=[]):
         message_queue = []
         # Handle human move, if it is their turn
         if game.human == game.nextMove:
-            uinput = input('You are player %s\n' % game.human +
-                            'Make your move: ')
+            uinput = input(
+                'You are player %s\n' % game.human.upper() +
+                'Make your move: '
+            )
             if 'q' in uinput.lower():
                 print('Thanks for playing!')
                 sys.exit()

@@ -35,7 +35,7 @@ def allSame(row):
 
 
 def isWon(gameState):
-    """Return an x or an o if that player won, else false."""
+    """Return an x or an o if that player won, else False."""
     getCol = lambda n: [x[n] for x in gameState]
 
     def checker(arr):
@@ -57,11 +57,11 @@ def isWon(gameState):
     return False
 
 
-def evalGameResult(winnerType, playerType):
+def evalGameResult(winnerType, playerType, depth):
     if winnerType == playerType:
-        return 100
+        return 100 - depth
     else:
-        return -100
+        return depth -100
 
 
 def allOpenSlots(gameState):
@@ -102,17 +102,18 @@ def makeMove(gameState, move, playerType):
 
 
 def minmax(gameState, playerType):
-    """Gets the best move for a player in the form (row, col)."""
+    """Gets the best move for a player in the form (row, col) not 0 indexed."""
     bestMove = None
+
     def minmaxIter(gameState, playerTurn, depth=0):
-        # Base conditions: Either there's a winner, or there's no next available
-        # move
+        # Base conditions: Either there's a winner, or there's no next
+        # available move
         # Check for winner
         winner = isWon(gameState)
         compareFn = max if playerType == playerTurn else min
         if winner:
             # Game over, evaluate game result
-            endResult = evalGameResult(winner, playerType)
+            endResult = evalGameResult(winner, playerType, depth)
             return endResult
         # Check for tie
         availableMoves = allOpenSlots(gameState)
