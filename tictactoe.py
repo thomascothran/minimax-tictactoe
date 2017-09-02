@@ -15,8 +15,6 @@ wrongInputMessage = (
     'the Row. For example, "A 2". Type "q" to quit.'
 )
 isTied = lambda g: len(computer_moves.allOpenSlots(g)) < 1
-
-
 welcome_message = (
     "Welcome to tic-tac-toe. To make a move, type in the  " +
     "row and column numbers. For instance, to select the " +
@@ -26,6 +24,7 @@ welcome_message = (
 
 
 def cleanInput(i):
+    """Turn human input into a move our game object can understand."""
     toNum = lambda n: {"A": 1, "B": 2, "C": 3}[n]
     cleanedArr = re.sub(r'\s+', '', i)
     if len(cleanedArr) != 2:
@@ -42,16 +41,18 @@ def cleanInput(i):
 
 
 def clearScreen():
+    """Clear screen using correct command for os."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def drawBoard(boardState):
-    """Draws the tic tac toe board."""
+    """Get a list of strings that when printed shows the tic tac toe board."""
     headerRow = "     A   B   C\n"
     breakLine = "   +---+---+---+"
     lines = [headerRow, breakLine]
 
     def colVals(n):
+        """Helper function to format board values for display."""
         rawValues = [boardState[n - 1][i] for i in range(3)]
         # Need to replace None values with spaces
         replaceNones = lambda x: x if x is not None else ' '
@@ -124,13 +125,22 @@ class GameState:
 def runGame(game, message_queue=[]):
     """Main game loop."""
     while True:
-        if computer_moves.isWon(game.state()) or isTied(game.state()):
-            message_queue = ['Game over!']
+        # Check if game is done
+        if isTied(game.state()):
+            message_queue = ['Tied! Game over!']
             drawScreen(message_queue, game)
             time.sleep(5)
             break
+        elif computer_moves.isWon(game.state()):
+            winner = computer_moves.isWon(game.state())
+            message_queue = ['Game over! {} Won!'.format(winner.upper())]
+            drawScreen(message_queue, game)
+            time.sleep(5)
+            break
+        # Start gameplay
         drawScreen(message_queue, game)
         message_queue = []
+        # Handle human move, if it is their turn
         if game.human == game.nextMove:
             uinput = input('You are player %s\n' % game.human +
                             'Make your move: ')
@@ -139,10 +149,12 @@ def runGame(game, message_queue=[]):
                 sys.exit()
             try:
                 moveCoordinates = cleanInput(uinput)
+            # Check for bad user input
             except ValueError:
                 message_queue.append(wrongInputMessage)
                 continue
             handleMove(moveCoordinates, game, game.human, message_queue)
+        # Handle computer move, if it's computer's turn
         else:
             moveCoords = computer_moves.minmax(game.state(), game.nextMove)
             moveCoords = {
@@ -156,6 +168,7 @@ def runGame(game, message_queue=[]):
 
 if __name__ == '__main__':
     clearScreen()
+    # Player selects X or O
     while True:
         uinput = input('Which player do you want to be? X or O?\n-> ')
         if uinput.lower() in playerTypes:
@@ -163,6 +176,7 @@ if __name__ == '__main__':
         else:
             clearScreen()
             print('You need to type "X" or "O" to select a player')
+    # Initialize and start game
     game = GameState(humanPlayer=uinput.lower())
     message_queue = ["X goes first".format(uinput.upper())]
     runGame(game, message_queue)
